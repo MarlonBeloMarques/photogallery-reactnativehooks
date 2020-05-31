@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,13 +6,25 @@ import {
   Image,
   Dimensions,
   TouchableOpacity,
+  Animated
 } from "react-native";
 
 const maxWidth = Dimensions.get("window").width;
 
 function DetailView (props) {
 
+  const [openProgress, setOpenProgress] = useState(new Animated.Value(0))
+
   const { photo, onClose } = props;
+
+  useEffect(() => {
+    Animated.timing(openProgress, {
+      toValue: 1,
+      duration: 300
+    }).start()
+
+    
+  }, []) 
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.detailView]}>
@@ -23,7 +35,21 @@ function DetailView (props) {
           height: 300,
         }}
       />
-      <View style={styles.body}>
+      <Animated.View 
+        style={[
+          styles.body,
+          {
+            opacity: openProgress,
+            transform: [
+              {
+                translateY: openProgress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [100, 0]
+                })
+              }
+            ]
+          } 
+        ]}>
         <Text style={styles.title}>- {photo.postedBy}</Text>
         <Text style={styles.description}>
           Lorem Ipsum is simply dummy text of the printing and typesetting
@@ -36,7 +62,7 @@ function DetailView (props) {
           and more recently with desktop publishing software like Aldus
           PageMaker including versions of Lorem Ipsum.
         </Text>
-      </View>
+      </Animated.View>
       <TouchableOpacity onPress={onClose} style={styles.closeButton}>
         <Text style={styles.closeText}>Close</Text>
       </TouchableOpacity>
@@ -87,7 +113,7 @@ const styles = StyleSheet.create({
     left: 20,
     borderWidth: 1,
     borderColor: "white",
-    padding: 20,
+    padding: 10,
     paddingTop: 10,
     paddingBottom: 10,
     borderWidth: StyleSheet.hairlineWidth,
