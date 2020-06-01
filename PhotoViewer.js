@@ -29,7 +29,7 @@ function DetailView (props) {
   return (
     <View style={[StyleSheet.absoluteFill, styles.detailView]}>
       <Image
-        source={photo.source}
+        source={{ uri : photo.url }}
         style={{
           width: maxWidth,
           height: 300,
