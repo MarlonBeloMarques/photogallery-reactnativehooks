@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -24,6 +24,9 @@ function DetailView (props) {
     width: sourcePhotoDimensions.width,
     height: sourcePhotoDimensions.height,
   });
+
+  const elementRef = useRef()
+
   const [destinePhoto, setDestinePhoto] = useState({
     x: 0,
     y: 0,
@@ -37,27 +40,30 @@ function DetailView (props) {
       duration: 300
     }).start()
 
-    setOpenMeasurements({
-      sourceX : sourcePhoto.x,
-      sourceY : sourcePhoto.y,
-      sourceWidth : sourcePhoto.width,
-      sourceHeight : sourcePhoto.height,
-      destX : destinePhoto.x,
-      destY: destinePhoto.y,
-      destWidth: destinePhoto.width,
-      destHeight: destinePhoto.height
-    })
+    console.log(destinePhoto);
   }, []) 
 
+  setTimeout(() => {
+    setOpenMeasurements({
+      sourceX: sourcePhoto.x,
+      sourceY: sourcePhoto.y,
+      sourceWidth: sourcePhoto.width,
+      sourceHeight: sourcePhoto.height,
+      destX: destinePhoto.x,
+      destY: destinePhoto.y,
+      destWidth: destinePhoto.width,
+      destHeight: destinePhoto.height,
+    });
+  })
+
   return (
-    <View
-      onLayout={(event) => {
-        const { x, y, width, height } = event.nativeEvent.layout;
-        setDestinePhoto({ x: x, y: y, width: width, height: height });
-      }}
-      style={[StyleSheet.absoluteFill, styles.detailView]}
-    >
+    <View style={[StyleSheet.absoluteFill, styles.detailView]}>
       <Animated.Image
+        ref={elementRef}
+        onLayout={(event) => {
+          const { x, y, width, height } = event.nativeEvent.layout;
+          setDestinePhoto({ x: x, y: y, width: width, height: height });
+        }}
         source={{ uri: photo.url }}
         style={{
           width: maxWidth,
@@ -119,17 +125,11 @@ function DetailView (props) {
             }),
             left: openProgress.interpolate({
               inputRange: [0, 1],
-              outputRange: [
-                openMeasurements.sourceX,
-                openMeasurements.destX,
-              ],
+              outputRange: [openMeasurements.sourceX, openMeasurements.destX],
             }),
             top: openProgress.interpolate({
               inputRange: [0, 1],
-              outputRange: [
-                openMeasurements.sourceY,
-                openMeasurements.destY,
-              ],
+              outputRange: [openMeasurements.sourceY, openMeasurements.destY],
             }),
           }}
         />

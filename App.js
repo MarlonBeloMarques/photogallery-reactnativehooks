@@ -27,18 +27,15 @@ function Item ({ item, onPhotoOpen, dimensionPhotoClicked }) {
   return (
     <TouchableWithoutFeedback
       onPress={() => {
-        onPhotoOpen(item), dimensionPhotoClicked(dimensions), console.log(dimensions)
+        onPhotoOpen(item), dimensionPhotoClicked(dimensions)
       }}
     >
       <Image
         ref={elementRef}
         onLayout={(event) => {
-          const { x, y, height, width } = event.nativeEvent.layout;
-          setDimensions({ x: x, y: y, height: height, width: width });
-
           if(elementRef) {
-            elementRef.current.measure((x, y, width, height, pageX, pageY) => {
-                console.log(x, y, width, height, pageX, pageY);
+            elementRef.current.measureInWindow((x, y, width, height) => {
+                setDimensions({ x: x, y: y, height: height, width: width });
             })
           }
         }}
