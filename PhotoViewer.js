@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   Animated
 } from "react-native";
-import PropTypes from 'prop-types'
 
 const maxWidth = Dimensions.get("window").width;
 
@@ -17,6 +16,7 @@ function DetailView (props) {
   const { photo, onClose, sourcePhotoDimensions } = props;
 
   const [openProgress, setOpenProgress] = useState(new Animated.Value(0))
+  const [openMeasurements, setOpenMeasurements] = useState(null)
 
   const [sourcePhoto, setSourcePhoto] = useState({
     x: sourcePhotoDimensions.x,
@@ -24,7 +24,6 @@ function DetailView (props) {
     width: sourcePhotoDimensions.width,
     height: sourcePhotoDimensions.height,
   });
-
   const [destinePhoto, setDestinePhoto] = useState({
     x: 0,
     y: 0,
@@ -38,22 +37,35 @@ function DetailView (props) {
       duration: 300
     }).start()
 
-    
+    setOpenMeasurements({
+      sourceX : sourcePhoto.x,
+      sourceY : sourcePhoto.y,
+      sourceWidth : sourcePhoto.width,
+      sourceHeight : sourcePhoto.height,
+      destX : destinePhoto.x,
+      destY: destinePhoto.y,
+      destWidth: destinePhoto.width,
+      destHeight: destinePhoto.height
+    })
   }, []) 
 
   return (
     <View
       onLayout={(event) => {
-        const {x, y, width, height} = event.nativeEvent.layout
-        setDestinePhoto({x: x, y: y, width: width, height: height})
+        const { x, y, width, height } = event.nativeEvent.layout;
+        setDestinePhoto({ x: x, y: y, width: width, height: height });
       }}
       style={[StyleSheet.absoluteFill, styles.detailView]}
     >
-      <Image
+      <Animated.Image
         source={{ uri: photo.url }}
         style={{
           width: maxWidth,
           height: 300,
+          opacity: openProgress.interpolate({
+            inputRange: [0.8, 1],
+            outputRange: [0, 1],
+          }),
         }}
       />
       <Animated.View
@@ -85,6 +97,44 @@ function DetailView (props) {
           including versions of Lorem Ipsum.
         </Text>
       </Animated.View>
+
+      {openMeasurements && (
+        <Animated.Image
+          source={{ uri: photo.url }}
+          style={{
+            position: "absolute",
+            width: openProgress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [
+                openMeasurements.sourceWidth,
+                openMeasurements.destWidth,
+              ],
+            }),
+            height: openProgress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [
+                openMeasurements.sourceHeight,
+                openMeasurements.destHeight,
+              ],
+            }),
+            left: openProgress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [
+                openMeasurements.sourceX,
+                openMeasurements.destX,
+              ],
+            }),
+            top: openProgress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [
+                openMeasurements.sourceY,
+                openMeasurements.destY,
+              ],
+            }),
+          }}
+        />
+      )}
+
       <TouchableOpacity onPress={onClose} style={styles.closeButton}>
         <Text style={styles.closeText}>Close</Text>
       </TouchableOpacity>

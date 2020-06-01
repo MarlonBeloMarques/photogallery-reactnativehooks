@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   StyleSheet,
-  Text,
   View,
   Image,
   FlatList,
@@ -17,6 +16,7 @@ const maxWidth = Dimensions.get("window").width;
 
 function Item ({ item, onPhotoOpen, dimensionPhotoClicked }) {
 
+  const elementRef = useRef()
   const [dimensions, setDimensions] = useState({
     x: 0,
     y: 0,
@@ -24,22 +24,29 @@ function Item ({ item, onPhotoOpen, dimensionPhotoClicked }) {
     height: 0,
   });
 
-
   return (
     <TouchableWithoutFeedback
       onPress={() => {
-        onPhotoOpen(item), dimensionPhotoClicked(dimensions);
+        onPhotoOpen(item), dimensionPhotoClicked(dimensions), console.log(dimensions)
       }}
     >
       <Image
+        ref={elementRef}
         onLayout={(event) => {
           const { x, y, height, width } = event.nativeEvent.layout;
           setDimensions({ x: x, y: y, height: height, width: width });
+
+          if(elementRef) {
+            elementRef.current.measure((x, y, width, height, pageX, pageY) => {
+                console.log(x, y, width, height, pageX, pageY);
+            })
+          }
         }}
         source={{ uri : item.url }}
         style={{
           width: item.width,
           height: item.height,
+          borderWidth: 2
         }}
       />
     </TouchableWithoutFeedback>
@@ -61,10 +68,10 @@ export default function App() {
 
   return (
     <PhotoViewer
-      renderContent={({ onPhotoOpen, dimensionPhotoClicked }) =>
-        <FlatList 
-          data={dataSource} 
-          renderItem={({item}) => (
+      renderContent={({ onPhotoOpen, dimensionPhotoClicked }) => (
+        <FlatList
+          data={dataSource}
+          renderItem={({ item }) => (
             <View
               style={{
                 flexDirection: "row",
@@ -73,14 +80,19 @@ export default function App() {
               }}
             >
               {item.map((item) => (
-                <Item item={item} key={item.id} onPhotoOpen={onPhotoOpen} dimensionPhotoClicked={dimensionPhotoClicked} />
+                <Item
+                  item={item}
+                  key={item.id}
+                  onPhotoOpen={onPhotoOpen}
+                  dimensionPhotoClicked={dimensionPhotoClicked}
+                />
               ))}
             </View>
-          )} 
+          )}
         />
-      }
+      )}
     />
-  )
+  );
 }
 
 const styles = StyleSheet.create({
