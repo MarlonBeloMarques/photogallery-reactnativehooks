@@ -15,12 +15,28 @@ import PhotoViewer from "./PhotoViewer";
 const maxWidth = Dimensions.get("window").width;
 
 
-function Item ({ item, onPhotoOpen }) {
+function Item ({ item, onPhotoOpen, dimensionPhotoClicked }) {
+
+  const [dimensions, setDimensions] = useState({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
+
 
   return (
-    <TouchableWithoutFeedback onPress={() => onPhotoOpen(item)}>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        onPhotoOpen(item), dimensionPhotoClicked(dimensions);
+      }}
+    >
       <Image
-        source={{ uri: item.url }}
+        onLayout={(event) => {
+          const { x, y, height, width } = event.nativeEvent.layout;
+          setDimensions({ x: x, y: y, height: height, width: width });
+        }}
+        source={{ uri : item.url }}
         style={{
           width: item.width,
           height: item.height,
@@ -45,7 +61,7 @@ export default function App() {
 
   return (
     <PhotoViewer
-      renderContent={({ onPhotoOpen }) =>
+      renderContent={({ onPhotoOpen, dimensionPhotoClicked }) =>
         <FlatList 
           data={dataSource} 
           renderItem={({item}) => (
@@ -57,7 +73,7 @@ export default function App() {
               }}
             >
               {item.map((item) => (
-                <Item item={item} key={item.id} onPhotoOpen={onPhotoOpen} />
+                <Item item={item} key={item.id} onPhotoOpen={onPhotoOpen} dimensionPhotoClicked={dimensionPhotoClicked} />
               ))}
             </View>
           )} 

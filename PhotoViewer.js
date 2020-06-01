@@ -8,14 +8,29 @@ import {
   TouchableOpacity,
   Animated
 } from "react-native";
+import PropTypes from 'prop-types'
 
 const maxWidth = Dimensions.get("window").width;
 
 function DetailView (props) {
 
+  const { photo, onClose, sourcePhotoDimensions } = props;
+
   const [openProgress, setOpenProgress] = useState(new Animated.Value(0))
 
-  const { photo, onClose } = props;
+  const [sourcePhoto, setSourcePhoto] = useState({
+    x: sourcePhotoDimensions.x,
+    y: sourcePhotoDimensions.y,
+    width: sourcePhotoDimensions.width,
+    height: sourcePhotoDimensions.height,
+  });
+
+  const [destinePhoto, setDestinePhoto] = useState({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
 
   useEffect(() => {
     Animated.timing(openProgress, {
@@ -27,15 +42,21 @@ function DetailView (props) {
   }, []) 
 
   return (
-    <View style={[StyleSheet.absoluteFill, styles.detailView]}>
+    <View
+      onLayout={(event) => {
+        const {x, y, width, height} = event.nativeEvent.layout
+        setDestinePhoto({x: x, y: y, width: width, height: height})
+      }}
+      style={[StyleSheet.absoluteFill, styles.detailView]}
+    >
       <Image
-        source={{ uri : photo.url }}
+        source={{ uri: photo.url }}
         style={{
           width: maxWidth,
           height: 300,
         }}
       />
-      <Animated.View 
+      <Animated.View
         style={[
           styles.body,
           {
@@ -44,35 +65,41 @@ function DetailView (props) {
               {
                 translateY: openProgress.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [100, 0]
-                })
-              }
-            ]
-          } 
-        ]}>
+                  outputRange: [100, 0],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
         <Text style={styles.title}>- {photo.postedBy}</Text>
         <Text style={styles.description}>
           Lorem Ipsum is simply dummy text of the printing and typesetting
-          industry. Lorem Ipsum has been the industry's standard dummy text
-          ever since the 1500s, when an unknown printer took a galley of type
-          and scrambled it to make a type specimen book. It has survived not
-          only five centuries, but also the leap into electronic typesetting,
-          remaining essentially unchanged. It was popularised in the 1960s
-          with the release of Letraset sheets containing Lorem Ipsum passages,
-          and more recently with desktop publishing software like Aldus
-          PageMaker including versions of Lorem Ipsum.
+          industry. Lorem Ipsum has been the industry's standard dummy text ever
+          since the 1500s, when an unknown printer took a galley of type and
+          scrambled it to make a type specimen book. It has survived not only
+          five centuries, but also the leap into electronic typesetting,
+          remaining essentially unchanged. It was popularised in the 1960s with
+          the release of Letraset sheets containing Lorem Ipsum passages, and
+          more recently with desktop publishing software like Aldus PageMaker
+          including versions of Lorem Ipsum.
         </Text>
       </Animated.View>
       <TouchableOpacity onPress={onClose} style={styles.closeButton}>
         <Text style={styles.closeText}>Close</Text>
       </TouchableOpacity>
     </View>
-  )
+  );
 }
 
 export default function PhotoViewer (props) {
-
+  
   const [photo, setPhoto] = useState(null)
+  const [dimensions, setDimensions] = useState({})
+
+  function sourcePhoto(dimensions) {
+    setDimensions(dimensions)
+  }
 
   function open(photo) {
     console.log(photo);
@@ -85,8 +112,8 @@ export default function PhotoViewer (props) {
 
   return (
     <View style={{ flex: 1 }}>
-      {props.renderContent({ onPhotoOpen: open })}
-      {photo && <DetailView photo={photo} onClose={close} />}
+      {props.renderContent({ onPhotoOpen: open, dimensionPhotoClicked: sourcePhoto })}
+      {photo && <DetailView photo={photo} onClose={close} sourcePhotoDimensions={dimensions}/>}
     </View>
   )
 }
