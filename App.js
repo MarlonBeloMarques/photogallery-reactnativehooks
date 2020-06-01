@@ -43,7 +43,6 @@ function Item ({ item, onPhotoOpen, dimensionPhotoClicked }) {
         style={{
           width: item.width,
           height: item.height,
-          borderWidth: 2
         }}
       />
     </TouchableWithoutFeedback>

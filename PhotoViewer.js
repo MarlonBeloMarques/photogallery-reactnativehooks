@@ -57,7 +57,7 @@ function DetailView (props) {
   })
 
   return (
-    <View style={[StyleSheet.absoluteFill, styles.detailView]}>
+    <Animated.View style={[StyleSheet.absoluteFill, {}]}>
       <Animated.Image
         ref={elementRef}
         onLayout={(event) => {
@@ -79,6 +79,7 @@ function DetailView (props) {
           styles.body,
           {
             opacity: openProgress,
+            backgroundColor: '#fff',
             transform: [
               {
                 translateY: openProgress.interpolate({
@@ -138,7 +139,7 @@ function DetailView (props) {
       <TouchableOpacity onPress={onClose} style={styles.closeButton}>
         <Text style={styles.closeText}>Close</Text>
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   );
 }
 
