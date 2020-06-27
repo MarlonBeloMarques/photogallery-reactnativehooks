@@ -40,30 +40,22 @@ function DetailView (props) {
       duration: 300
     }).start()
 
-    console.log(destinePhoto);
-  }, []) 
-
-  setTimeout(() => {
     setOpenMeasurements({
       sourceX: sourcePhoto.x,
       sourceY: sourcePhoto.y,
       sourceWidth: sourcePhoto.width,
       sourceHeight: sourcePhoto.height,
-      destX: destinePhoto.x,
-      destY: destinePhoto.y,
-      destWidth: destinePhoto.width,
-      destHeight: destinePhoto.height,
+      destX: 0,
+      destY: 0,
+      destWidth: maxWidth,
+      destHeight: 300,
     });
-  })
+
+  }, []) 
 
   return (
-    <Animated.View style={[StyleSheet.absoluteFill, {}]}>
+    <View style={[StyleSheet.absoluteFill, {}]}>
       <Animated.Image
-        ref={elementRef}
-        onLayout={(event) => {
-          const { x, y, width, height } = event.nativeEvent.layout;
-          setDestinePhoto({ x: x, y: y, width: width, height: height });
-        }}
         source={{ uri: photo.url }}
         style={{
           width: maxWidth,
@@ -139,7 +131,7 @@ function DetailView (props) {
       <TouchableOpacity onPress={onClose} style={styles.closeButton}>
         <Text style={styles.closeText}>Close</Text>
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 }
 
