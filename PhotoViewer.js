@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 const maxWidth = Dimensions.get("window").width;
+const maxHeight = Dimensions.get("window").height;
 
 function DetailView (props) {
 
@@ -17,6 +18,8 @@ function DetailView (props) {
 
   const [openProgress, setOpenProgress] = useState(new Animated.Value(0))
   const [openMeasurements, setOpenMeasurements] = useState(null)
+
+  const [animationComplete, setAnimationComplete] = useState(false);
 
   const [sourcePhoto, setSourcePhoto] = useState({
     x: sourcePhotoDimensions.x,
@@ -34,11 +37,50 @@ function DetailView (props) {
     height: 0,
   });
 
+  let openingInitScale = 0;
+  let openingInitTranslateY = 0;
+  let openingInitTranslateX = 0;
+
+
+  if (openMeasurements) {
+    const aspectRatio = photo.width / photo.height;
+    const screenAspectRatio = maxWidth / 300;
+
+    if (aspectRatio - screenAspectRatio > 0) {
+      const maxDim = openMeasurements.destWidth;
+      const srcShortDim = openMeasurements.sourceHeight;
+      const srcMaxDim = srcShortDim * aspectRatio;
+      openingInitScale = srcMaxDim / maxDim;
+    } else {
+      const maxDim = openMeasurements.destHeight;
+      const srcShortDim = openMeasurements.sourceWidth;
+      const srcMaxDim = srcShortDim / aspectRatio;
+      openingInitScale = srcMaxDim / maxDim;
+    }
+  }
+
+  if (openMeasurements) {
+    const translateInitY =
+      openMeasurements.sourceY + openMeasurements.sourceHeight / 2;
+    const translateDestY =
+      openMeasurements.destY + openMeasurements.destHeight / 2;
+    openingInitTranslateY = translateInitY - translateDestY;
+    const translateInitX =
+      openMeasurements.sourceX + openMeasurements.sourceWidth / 2;
+    const translateDestX =
+      openMeasurements.destX + openMeasurements.destWidth / 2;
+    openingInitTranslateX = translateInitX - translateDestX;
+  }
+
+  console.log(openingInitTranslateY);
+
   useEffect(() => {
     Animated.timing(openProgress, {
       toValue: 1,
       duration: 300
-    }).start()
+    }).start(() => {
+      setAnimationComplete(true);
+    })
 
     setOpenMeasurements({
       sourceX: sourcePhoto.x,
@@ -53,6 +95,7 @@ function DetailView (props) {
 
   }, []) 
 
+
   return (
     <View style={[StyleSheet.absoluteFill, {}]}>
       <Animated.Image
@@ -61,8 +104,8 @@ function DetailView (props) {
           width: maxWidth,
           height: 300,
           opacity: openProgress.interpolate({
-            inputRange: [0.8, 1],
-            outputRange: [0, 1],
+            inputRange: [0, 0.99, 0.995],
+            outputRange: [0, 0, 1],
           }),
         }}
       />
@@ -97,33 +140,39 @@ function DetailView (props) {
         </Text>
       </Animated.View>
 
-      {openMeasurements && (
+      {openMeasurements && !animationComplete && (
         <Animated.Image
           source={{ uri: photo.url }}
           style={{
             position: "absolute",
-            width: openProgress.interpolate({
-              inputRange: [0, 1],
-              outputRange: [
-                openMeasurements.sourceWidth,
-                openMeasurements.destWidth,
-              ],
+            width: openMeasurements.destWidth,
+            height: openMeasurements.destHeight,
+            left: openMeasurements.destX,
+            top: openMeasurements.destY,
+            opacity: openProgress.interpolate({
+              inputRange: [0,  0.005, 0.995, 1],
+              outputRange: [0, 1, 1, 0]
             }),
-            height: openProgress.interpolate({
-              inputRange: [0, 1],
-              outputRange: [
-                openMeasurements.sourceHeight,
-                openMeasurements.destHeight,
-              ],
-            }),
-            left: openProgress.interpolate({
-              inputRange: [0, 1],
-              outputRange: [openMeasurements.sourceX, openMeasurements.destX],
-            }),
-            top: openProgress.interpolate({
-              inputRange: [0, 1],
-              outputRange: [openMeasurements.sourceY, openMeasurements.destY],
-            }),
+            transform: [
+                {
+                  translateX: openProgress.interpolate({
+                    inputRange: [0.01, 0.99],
+                    outputRange: [openingInitTranslateX, 0]
+                  })
+                },
+                {
+                  translateY: openProgress.interpolate({
+                    inputRange: [0.01, 0.99],
+                    outputRange: [openingInitTranslateY, 0]
+                  })
+                },
+                {
+                  scale: openProgress.interpolate({
+                    inputRange: [0.01, 0.99],
+                    outputRange: [openingInitScale, 1]
+                  })
+                }
+              ]
           }}
         />
       )}
