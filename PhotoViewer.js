@@ -77,7 +77,8 @@ function DetailView (props) {
   useEffect(() => {
     Animated.timing(openProgress, {
       toValue: 1,
-      duration: 300
+      duration: 300,
+      useNativeDriver: true
     }).start(() => {
       setAnimationComplete(true);
     })
